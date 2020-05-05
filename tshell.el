@@ -88,8 +88,6 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
       (display-buffer tshell-out-buffer 'other-window))
      (t (message "Unknown prompt")))))
 
-(-filter #'string-empty-p '())
-
 (defun tshell-shell-eval (line)
   "Evaluate LINE in the shell mode."
   ;; Some elementary preprocessing.
