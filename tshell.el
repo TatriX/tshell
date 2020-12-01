@@ -6,6 +6,9 @@
 (defvar tshell-elisp-prompt "> ")
 (defvar tshell-current-prompt tshell-shell-prompt)
 
+(defvar *)
+(put '* 'variable-documentation "Most recent value evaluated in Tshell.")
+
 (defvar tshell-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'tshell-dispatch)
@@ -22,6 +25,7 @@ You can thus get the full benefit of adaptive filling
  (see the variable `adaptive-fill-mode').
 \\{tshell-mode-map}
 Turning on Text mode runs the normal hook `text-mode-hook'."
+  (set (make-local-variable '*) nil)
   (setq-local tshell-mode t))
 
 (defun tshell ()
@@ -89,7 +93,9 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   "Evaluate LINE in the elisp mode."
   (with-current-buffer tshell-out-buffer
     (erase-buffer)
-    (insert (pp-to-string (eval (car (read-from-string line)))))))
+    (let ((result (eval (car (read-from-string line)))))
+      (setq * result)
+      (insert (pp-to-string result)))))
 
 (defun tshell-out-insert (str)
   "Insert STR into `tshell-out-buffer'."
