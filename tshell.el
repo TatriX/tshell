@@ -4,6 +4,7 @@
 
 (defvar tshell-shell-prompt "$ ")
 (defvar tshell-elisp-prompt "> ")
+(defvar tshell-current-prompt tshell-shell-prompt)
 
 (defvar tshell-mode-map
   (let ((map (make-sparse-keymap)))
@@ -29,12 +30,12 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   (get-buffer-create tshell-out-buffer)
   (let ((buffer (switch-to-buffer (get-buffer-create tshell-buffer))))
     (with-current-buffer tshell-buffer
-      (erase-buffer)
       (tshell-mode)
-      (insert "Welcome to *tshell*\n")
-      (insert "Type `C-c C-c' to activate transient\n")
+      (when (bobp)
+        (insert "# Welcome to *tshell*\n")
+        (insert "# Type `C-c C-c' to activate transient\n"))
       (insert "\n")
-      (insert tshell-shell-prompt))))
+      (insert tshell-current-prompt))))
 
 
 ;;; Public stuff
@@ -47,14 +48,21 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
       (tshell-eval-command)
     (tshell-eval-command)
     (insert "\n")
-    (insert tshell-shell-prompt)))
+    (insert tshell-current-prompt)))
 
 (defun tshell-eval-command ()
   "Evaluate current command (right now command means line)."
   (interactive)
   (let ((line (thing-at-point 'line)))
-    (setq line (string-remove-prefix tshell-shell-prompt line))
-    (tshell-shell-eval line)))
+    (cond
+     ((string-prefix-p tshell-shell-prompt line)
+      (when (eobp)
+        (setq tshell-current-prompt tshell-shell-prompt))
+      (tshell-shell-eval (string-remove-prefix tshell-shell-prompt line)))
+     ((string-prefix-p tshell-elisp-prompt line)
+      (when (eobp)
+        (setq tshell-current-prompt tshell-elisp-prompt))
+      (tshell-elisp-eval (string-remove-prefix tshell-elisp-prompt line))))))
 
 (defun tshell-shell-eval (line)
   "Evaluate LINE in the shell mode."
@@ -65,6 +73,12 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
     (tshell-out-insert (string-remove-prefix "cd " line))
     (cd (expand-file-name (string-remove-prefix "cd " line))))
    (t (async-shell-command line tshell-out-buffer))))
+
+(defun tshell-elisp-eval (line)
+  "Evaluate LINE in the elisp mode."
+  (with-current-buffer tshell-out-buffer
+    (erase-buffer)
+    (insert (pp-to-string (eval (car (read-from-string line)))))))
 
 (defun tshell-out-insert (str)
   "Insert STR into `tshell-out-buffer'."
