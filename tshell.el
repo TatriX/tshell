@@ -72,6 +72,8 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
    ((string-prefix-p "cd " line)
     (tshell-out-insert (string-remove-prefix "cd " line))
     (cd (expand-file-name (string-remove-prefix "cd " line))))
+   ((string-equal "undo" line)
+    (tshell-undo))
    ((string-prefix-p "> " line)
     (tshell-shell-kill)
     (with-current-buffer tshell-out-buffer
@@ -99,6 +101,11 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   (if (process-live-p (get-buffer-process tshell-out-buffer))
       (when (yes-or-no-p "A command is running. Kill it?")
         (kill-process (get-buffer-process tshell-out-buffer)))))
+
+(defun tshell-undo ()
+  "Undo changes in out buffer."
+  (with-current-buffer tshell-out-buffer
+    (undo 1)))
 
 
 ;;; Private stuff
