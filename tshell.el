@@ -57,27 +57,27 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 (defun tshell-eval-command ()
   "Evaluate current command (right now command means line)."
   (interactive)
-  (let ((line (thing-at-point 'line)))
+  (let ((line (string-trim-right (thing-at-point 'line))))
     (cond
+     ((string-equal ": undo" line)
+       (tshell-undo))
      ((string-prefix-p tshell-shell-prompt line)
-      (when (eobp)
-        (setq tshell-current-prompt tshell-shell-prompt))
-      (tshell-shell-eval (string-remove-prefix tshell-shell-prompt line)))
+      (tshell-shell-eval (string-remove-prefix tshell-shell-prompt line))
+      (setq tshell-current-prompt tshell-shell-prompt))
      ((string-prefix-p tshell-elisp-prompt line)
-      (when (eobp)
-        (setq tshell-current-prompt tshell-elisp-prompt))
-      (tshell-elisp-eval (string-remove-prefix tshell-elisp-prompt line))))))
+      (tshell-elisp-eval (string-remove-prefix tshell-elisp-prompt line))
+      (setq tshell-current-prompt tshell-elisp-prompt))
+     (t (message "Unknown prompt")))))
+
+(-filter #'string-empty-p '())
 
 (defun tshell-shell-eval (line)
   "Evaluate LINE in the shell mode."
   ;; Some elementary preprocessing.
-  (setq line (string-trim-right line))
   (cond
    ((string-prefix-p "cd " line)
     (tshell-out-insert (string-remove-prefix "cd " line))
     (cd (expand-file-name (string-remove-prefix "cd " line))))
-   ((string-equal "undo" line)
-    (tshell-undo))
    ((string-prefix-p "> " line)
     (tshell-shell-kill)
     (with-current-buffer tshell-out-buffer
@@ -92,6 +92,9 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 (defun tshell-elisp-eval (line)
   "Evaluate LINE in the elisp mode."
   (with-current-buffer tshell-out-buffer
+    ;; Save last shell output to "*"
+    (when (equal tshell-current-prompt tshell-shell-prompt)
+      (setq * (buffer-substring-no-properties (point-min) (point-max))))
     (erase-buffer)
     (let ((result (eval (car (read-from-string line)))))
       (setq * result)
@@ -111,7 +114,13 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 (defun tshell-undo ()
   "Undo changes in out buffer."
   (with-current-buffer tshell-out-buffer
-    (undo 1)))
+    (undo 1)
+    ;; Reset "*"
+    (cond
+     ((string-equal tshell-current-prompt tshell-shell-prompt)
+      (setq * (buffer-substring-no-properties (point-min) (point-max))))
+     ((string-equal tshell-current-prompt tshell-elisp-prompt)
+      (setq * (car (read-from-string (buffer-substring-no-properties (point-min) (point-max)))))))))
 
 
 ;;; Private stuff
