@@ -72,7 +72,16 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
    ((string-prefix-p "cd " line)
     (tshell-out-insert (string-remove-prefix "cd " line))
     (cd (expand-file-name (string-remove-prefix "cd " line))))
-   (t (async-shell-command line tshell-out-buffer))))
+   ((string-prefix-p "> " line)
+    (tshell-shell-kill)
+    (with-current-buffer tshell-out-buffer
+      (shell-command-on-region (point-min)
+                               (point-max)
+                               (string-remove-prefix "> " line)
+                               tshell-out-buffer)))
+   (t
+    (tshell-shell-kill)
+    (async-shell-command line tshell-out-buffer))))
 
 (defun tshell-elisp-eval (line)
   "Evaluate LINE in the elisp mode."
@@ -84,6 +93,12 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   "Insert STR into `tshell-out-buffer'."
   (with-current-buffer tshell-out-buffer
     (insert str)))
+
+(defun tshell-shell-kill ()
+  "Kill out buffer process if it's running."
+  (if (process-live-p (get-buffer-process tshell-out-buffer))
+      (when (yes-or-no-p "A command is running. Kill it?")
+        (kill-process (get-buffer-process tshell-out-buffer)))))
 
 
 ;;; Private stuff
