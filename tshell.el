@@ -25,8 +25,13 @@ You can thus get the full benefit of adaptive filling
  (see the variable `adaptive-fill-mode').
 \\{tshell-mode-map}
 Turning on Text mode runs the normal hook `text-mode-hook'."
-  (set (make-local-variable '*) nil)
-  (setq-local tshell-mode t))
+  (setq-local tshell-mode t)
+  (setq-local * nil)
+  (setq header-line-format '(:eval (format "%s %s"
+                                           (propertize
+                                            (directory-file-name (abbreviate-file-name default-directory))
+                                            'face 'font-lock-variable-name-face)
+                                           tshell-current-prompt))))
 
 (defun tshell ()
   (interactive)
