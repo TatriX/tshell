@@ -84,8 +84,9 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   "Evaluate LINE in the shell mode."
   ;; Some elementary preprocessing.
   (cond
+   ((string-equal "cd" line)
+    (cd "~"))
    ((string-prefix-p "cd " line)
-    (tshell-out-insert (string-remove-prefix "cd " line))
     (cd (expand-file-name (string-remove-prefix "cd " line))))
    ((string-prefix-p "> " line)
     (tshell-shell-kill)
