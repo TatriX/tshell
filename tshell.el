@@ -88,6 +88,10 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
     (cd "~"))
    ((string-prefix-p "cd " line)
     (cd (expand-file-name (string-remove-prefix "cd " line))))
+   ((string-prefix-p "e " line)
+    (let ((file (expand-file-name (string-remove-prefix "e " line))))
+      (with-current-buffer (window-buffer (other-window 1))
+        (find-file file))))
    ((string-prefix-p "> " line)
     (tshell-shell-kill)
     (with-current-buffer tshell-out-buffer
