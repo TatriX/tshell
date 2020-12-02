@@ -17,6 +17,10 @@
     (define-key map (kbd "C-M-x") #'tshell-eval-command)
     map))
 
+(defvar tshell-font-lock-keywords '(("^$ " . font-lock-function-name-face)
+                                    ("^> " . font-lock-variable-name-face)
+                                    ("^[$>:] \\<\\(\\w+\\)\\>" . (1 font-lock-type-face))))
+
 (define-derived-mode tshell-mode fundamental-mode "Tshell"
   "Major mode for editing text written for humans to read.
 In this mode, paragraphs are delimited only by blank or white lines.
@@ -25,6 +29,7 @@ You can thus get the full benefit of adaptive filling
 \\{tshell-mode-map}
 Turning on Text mode runs the normal hook `text-mode-hook'."
   (setq-local tshell-mode t)
+  (setq-local font-lock-defaults '(tshell-font-lock-keywords))
   (setq-local * nil)
   (setq header-line-format '(:eval (format "%s %s"
                                            (propertize
@@ -92,6 +97,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
     (let ((file (expand-file-name (string-remove-prefix "e " line))))
       (with-current-buffer (window-buffer (other-window 1))
         (find-file file))))
+   ;; Send out buffer as stdin
    ((string-prefix-p "> " line)
     (tshell-shell-kill)
     (with-current-buffer tshell-out-buffer
@@ -103,6 +109,8 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
     (tshell-shell-kill)
     (async-shell-command line tshell-out-buffer))))
 
+;; TODO: eval in tshell-buffer instead because we want to use buffer
+;; local variables from the shell buffer.
 (defun tshell-elisp-eval (line)
   "Evaluate LINE in the elisp mode."
   (with-current-buffer tshell-out-buffer
@@ -121,7 +129,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 
 (defun tshell-shell-kill ()
   "Kill out buffer process if it's running."
-  (if (process-live-p (get-buffer-process tshell-out-buffer))
+  (when (process-live-p (get-buffer-process tshell-out-buffer))
       (when (yes-or-no-p "A command is running. Kill it?")
         (kill-process (get-buffer-process tshell-out-buffer)))))
 
