@@ -5,8 +5,7 @@
 (defvar tshell-elisp-prompt "> ")
 (defvar tshell-current-prompt tshell-shell-prompt)
 
-(defvar *)
-(put '* 'variable-documentation "Most recent value evaluated in Tshell.")
+(defvar * nil "Most recent value evaluated in Tshell.")
 
 (defvar tshell-mode-map
   (let ((map (make-sparse-keymap)))
