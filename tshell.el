@@ -184,3 +184,5 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
                                    (point-max))
                                  cmd
                                  (current-buffer))))))
+
+(provide 'tshell)
