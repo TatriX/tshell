@@ -1,4 +1,3 @@
-
 (defvar tshell-buffer "*tshell*")
 (defvar tshell-out-buffer "*tshell-out*")
 
@@ -35,16 +34,21 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 
 (defun tshell ()
   (interactive)
-  ;; Creat out buffer
-  (get-buffer-create tshell-out-buffer)
-  (let ((buffer (switch-to-buffer (get-buffer-create tshell-buffer))))
+  ;; Create shell and out buffers first.
+  (let ((buffer (get-buffer-create tshell-buffer))
+        (out-buffer (get-buffer-create tshell-out-buffer)))
+    (pop-to-buffer buffer)
+    (unless (get-buffer-window out-buffer)
+      (split-window-below 16)
+      (switch-to-buffer-other-window out-buffer)
+      (select-window (get-buffer-window buffer)))
     (with-current-buffer tshell-buffer
-      (tshell-mode)
-      (when (bobp)
+      (unless (and (boundp 'tshell-mode) tshell-mode)
+        (tshell-mode)
         (insert "# Welcome to *tshell*\n")
-        (insert "# Type `C-c C-c' to activate transient\n"))
-      (insert "\n")
-      (insert tshell-current-prompt))))
+        (insert "# Type `C-c C-c' to activate transient\n")
+        (insert "\n")
+        (insert tshell-current-prompt)))))
 
 
 ;;; Public stuff
