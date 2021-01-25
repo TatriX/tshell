@@ -12,6 +12,8 @@
     (define-key map (kbd "C-c C-c") #'tshell-dispatch)
     (define-key map (kbd "C-c SPC") #'tshell-command)
     (define-key map (kbd "C-c @") #'tshell-command-region)
+    (define-key map (kbd "C-c C-d") #'tshell-command-cd)
+    (define-key map (kbd "C-c C-l") #'tshell-command-ls)
     (define-key map (kbd "RET") #'tshell-eval-input)
     (define-key map (kbd "C-M-x") #'tshell-eval-command)
     map))
@@ -89,9 +91,11 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   ;; Some elementary preprocessing.
   (cond
    ((string-equal "cd" line)
-    (cd "~"))
+    (cd "~")
+    (force-mode-line-update))
    ((string-prefix-p "cd " line)
-    (cd (expand-file-name (string-remove-prefix "cd " line))))
+    (cd (expand-file-name (string-remove-prefix "cd " line)))
+    (force-mode-line-update))
    ((string-prefix-p "e " line)
     (let ((file (expand-file-name (string-remove-prefix "e " line))))
       (with-current-buffer (window-buffer (other-window 1))
@@ -152,10 +156,21 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 (transient-define-prefix tshell-dispatch ()
   "Invoke a tshell command from a list of available commands."
   ["Transient and dwim commands"
-   [("l" "ls" (lambda () (interactive) (async-shell-command "ls" tshell-out-buffer)))
+   [("d" "cd" tshell-command-cd)
+    ("l" "ls" tshell-command-ls)
     ("x" "xargs" (lambda () (interactive) (tshell-command-region "xargs ")))
     ("SPC" "run" (lambda () (interactive) (tshell-command)))
     ("C-SPC" "run-region" (lambda () (interactive) (tshell-command-region)))]])
+
+(defun tshell-command-cd ()
+  "Change directory."
+  (interactive)
+  (call-interactively #'cd))
+
+(defun tshell-command-ls ()
+  "Run `ls'."
+  (interactive)
+  (async-shell-command "ls -1" tshell-out-buffer))
 
 (defvar tshell--command-history nil)
 
