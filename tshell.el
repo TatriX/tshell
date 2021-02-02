@@ -14,6 +14,7 @@
     (define-key map (kbd "C-c @") #'tshell-command-region)
     (define-key map (kbd "C-c C-d") #'tshell-command-cd)
     (define-key map (kbd "C-c C-l") #'tshell-command-ls)
+    (define-key map (kbd "C-c C-y") #'tshell-yank)
     (define-key map (kbd "RET") #'tshell-eval-input)
     (define-key map (kbd "C-M-x") #'tshell-eval-command)
     map))
@@ -75,13 +76,16 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   (let ((line (string-trim-right (thing-at-point 'line))))
     (cond
      ((string-equal ": undo" line)
-       (tshell-undo))
+      (tshell-undo))
+     ;; $ shell eval
      ((string-prefix-p tshell-shell-prompt line)
       (tshell-shell-eval (string-remove-prefix tshell-shell-prompt line))
       (setq tshell-current-prompt tshell-shell-prompt))
+     ;; > elisp eval
      ((string-prefix-p tshell-elisp-prompt line)
       (tshell-elisp-eval (string-remove-prefix tshell-elisp-prompt line))
-      (setq tshell-current-prompt tshell-elisp-prompt))
+      (setq tshell-current-prompt tshell-elisp-prompt)
+      (display-buffer tshell-out-buffer 'other-window))
      (t (message "Unknown prompt")))))
 
 (-filter #'string-empty-p '())
@@ -215,5 +219,10 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
                                    (point-max))
                                  cmd
                                  (current-buffer))))))
+
+(defun tshell-yank ()
+  "Yank contents of the output buffer at point."
+  (interactive)
+  (insert-buffer tshell-out-buffer))
 
 (provide 'tshell)
