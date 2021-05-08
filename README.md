@@ -25,6 +25,20 @@ git clone https://github.com/magit/transient ~/.emacs.d/
   :load-path "~/.emacs.d/tshell")
 ```
 
+### Completion
+
+There is a very rough completion support via [fish-completion](https://gitlab.com/ambrevar/emacs-fish-completion):
+```elisp
+(use-package fish-completion
+  :config
+  (when (and (executable-find "fish")
+             (require 'fish-completion nil t))
+    (global-fish-completion-mode 1)))
+```
+Note that you need to have [fish](https://fishshell.
+com/) installed.
+You can also use [bash-completion](https://github.com/szermatt/emacs-bash-completion) as a fallback for [fish-completion](https://gitlab.com/ambrevar/emacs-fish-completion#setup).
+
 ## Usage
 
 Run `M-x tshell`.
