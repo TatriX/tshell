@@ -40,7 +40,8 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
                                             (directory-file-name (abbreviate-file-name default-directory))
                                             'face 'font-lock-variable-name-face)
                                            tshell-current-prompt)))
-  (add-hook 'completion-at-point-functions #'tshell-completion-at-point nil t))
+  (when (fboundp 'fish-completion--list-completions)
+    (add-hook 'completion-at-point-functions #'tshell-completion-at-point nil t)))
 
 (defun tshell ()
   (interactive)
@@ -158,16 +159,15 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 (defun tshell-completion-at-point ()
   "tshell's `completion-at-point' function."
   ;; FIXME: this is very unreliable
-  (when (fboundp 'fish-completion--list-completions)
-    (let* ((start (save-excursion (beginning-of-line) (+ (point) 2)))
-           (end (point))
-           (line (buffer-substring-no-properties start end))
-           (bounds (bounds-of-thing-at-point 'symbol)))
-      (list (car bounds)
-            (cdr bounds)
-            (completion-table-dynamic
-             `(lambda (_)
-                (fish-completion--list-completions ,line)))))))
+  (let* ((start (save-excursion (beginning-of-line) (+ (point) 2)))
+         (end (point))
+         (line (buffer-substring-no-properties start end))
+         (bounds (bounds-of-thing-at-point 'symbol)))
+    (list (car bounds)
+          (cdr bounds)
+          (completion-table-dynamic
+           `(lambda (_)
+              (fish-completion--list-completions ,line))))))
 
 ;;; Transient interface
 
