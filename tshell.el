@@ -27,7 +27,7 @@
 
 (defvar tshell-font-lock-keywords '(("^$ " . font-lock-function-name-face)
                                     ("^> " . font-lock-variable-name-face)
-                                    ("^[$>:] \\<\\(\\w+\\)\\>" . (1 font-lock-type-face))))
+                                    ("^[$>:] \\_<\\(.*?\\)\\_>" . (1 font-lock-type-face))))
 
 (define-derived-mode tshell-mode fundamental-mode "Tshell"
   "Major mode for editing text written for humans to read.
