@@ -10,6 +10,9 @@
 
 (defvar * nil "Most recent value evaluated in Tshell.")
 
+(defconst tshell-dir (file-name-directory (or load-file-name buffer-file-name))
+  "`tshell' installation directory.")
+
 (defvar tshell-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'tshell-dispatch)
@@ -159,8 +162,12 @@ Currently available commands are:
   "Show tshell help."
   (with-current-buffer tshell-out-buffer
     (erase-buffer)
-    (insert "`tshell' is in early stage of development.\n")
-    (insert "Please see https://github.com/TatriX/tshell#usage\n")))
+    (let ((readme (concat tshell-dir "README.md")))
+      (when (file-exists-p readme)
+        (insert-file-contents readme)
+        (set-window-point (get-buffer-window (current-buffer) 'visible) (point-min))
+        (when (fboundp #'markdown-mode)
+          (markdown-mode)))))))
 
 (defun tshell-undo ()
   "Undo changes in out buffer."
