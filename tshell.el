@@ -56,9 +56,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
     (with-current-buffer tshell-buffer
       (unless (and (boundp 'tshell-mode) tshell-mode)
         (tshell-mode)
-        (insert "# Welcome to *tshell*\n")
-        (insert "# Type `C-c C-c' to activate transient\n")
-        (insert "\n")
+        (tshell--insert-welcome-note)
         (insert tshell-current-prompt)))))
 
 
@@ -168,6 +166,15 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
           (completion-table-dynamic
            `(lambda (_)
               (fish-completion--list-completions ,line))))))
+
+(defun tshell--insert-welcome-note ()
+  "Print welcome note."
+  (insert "$ # Welcome to *tshell*\n")
+  (insert "$ # Have feature requests, bugreport or general feedback?\n")
+  (insert "$ xdg-open https://github.com/TatriX/tshell/discussions")
+  (insert "\n")
+  (insert (substitute-command-keys "$ # Use `\\[tshell-eval-input]' to run any line\n"))
+  (insert ":help\n"))
 
 ;;; Transient interface
 
