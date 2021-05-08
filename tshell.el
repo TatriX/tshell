@@ -5,6 +5,7 @@
 
 (defvar tshell-shell-prompt "$ ")
 (defvar tshell-elisp-prompt "> ")
+(defvar tshell-internal-prompt ": ")
 (defvar tshell-current-prompt tshell-shell-prompt)
 
 (defvar * nil "Most recent value evaluated in Tshell.")
@@ -72,13 +73,15 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
     (insert "\n")
     (insert tshell-current-prompt)))
 
+;; TODO: Include lines without a prompt to the current command.
 (defun tshell-eval-command ()
   "Evaluate current command (right now command means line)."
   (interactive)
   (let ((line (string-trim-right (thing-at-point 'line))))
     (cond
-     ((string-equal ": undo" line)
-      (tshell-undo))
+     ;; : help
+     ((string-prefix-p tshell-internal-prompt line)
+      (tshell-internal-eval (string-remove-prefix tshell-internal-prompt line)))
      ;; $ shell eval
      ((string-prefix-p tshell-shell-prompt line)
       (tshell-shell-eval (string-remove-prefix tshell-shell-prompt line))
@@ -121,13 +124,22 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 (defun tshell-elisp-eval (line)
   "Evaluate LINE in the elisp mode."
   (with-current-buffer tshell-out-buffer
-    ;; Save last shell output to "*"
+    ;; Save last shell output to "*" in case it's used in `line'.
     (when (equal tshell-current-prompt tshell-shell-prompt)
       (setq * (buffer-substring-no-properties (point-min) (point-max))))
     (erase-buffer)
     (let ((result (eval (car (read-from-string line)))))
       (setq * result)
       (insert (pp-to-string result)))))
+
+(defun tshell-internal-eval (line)
+  "Evaluate LINE as internal command.
+Currently available commands are:
+ : undo
+ : help"
+  (pcase line
+    ("undo" (tshell-undo))
+    ("help" (tshell-help))))
 
 (defun tshell-out-insert (str)
   "Insert STR into `tshell-out-buffer'."
@@ -139,6 +151,13 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   (when (process-live-p (get-buffer-process tshell-out-buffer))
       (when (yes-or-no-p "A command is running. Kill it?")
         (kill-process (get-buffer-process tshell-out-buffer)))))
+
+(defun tshell-help ()
+  "Show tshell help."
+  (with-current-buffer tshell-out-buffer
+    (erase-buffer)
+    (insert "`tshell' is in early stage of development.\n")
+    (insert "Please see https://github.com/TatriX/tshell#usage\n")))
 
 (defun tshell-undo ()
   "Undo changes in out buffer."
@@ -169,12 +188,11 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 
 (defun tshell--insert-welcome-note ()
   "Print welcome note."
-  (insert "$ # Welcome to *tshell*\n")
-  (insert "$ # Have feature requests, bugreport or general feedback?\n")
-  (insert "$ xdg-open https://github.com/TatriX/tshell/discussions")
-  (insert "\n")
-  (insert (substitute-command-keys "$ # Use `\\[tshell-eval-input]' to run any line\n"))
-  (insert ":help\n"))
+  (insert tshell-shell-prompt "# Welcome to *tshell*\n")
+  (insert tshell-shell-prompt "# Have feature requests, bugreports or general feedback?\n")
+  (insert tshell-shell-prompt (substitute-command-keys "# Use `\\[tshell-eval-input]' to run any line\n"))
+  (insert tshell-shell-prompt "xdg-open https://github.com/TatriX/tshell/discussions\n")
+  (insert tshell-internal-prompt "help\n"))
 
 ;;; Transient interface
 

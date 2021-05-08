@@ -93,7 +93,7 @@ or you can undo changes in the `*tshell-out*` buffer.
 #### Undo
 To undo changes in `*tshell-out*` buffer you can run
 ```
-:undo
+: undo
 ```
 or just switch to the `*tshell-out*` buffer and use your regular undo keybinding, like `C-/`.
 
