@@ -91,6 +91,9 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
       (tshell-elisp-eval (string-remove-prefix tshell-elisp-prompt line))
       (setq tshell-current-prompt tshell-elisp-prompt)
       (display-buffer tshell-out-buffer 'other-window))
+     ((= (length line) 1)
+      ;; Do nothing if there is just a prompt or any other single character
+      )
      (t (message "Unknown prompt")))))
 
 (defun tshell-shell-eval (line)
