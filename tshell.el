@@ -122,8 +122,12 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
                                (string-remove-prefix "> " line)
                                tshell-out-buffer)))
    (t
-    (tshell-shell-kill)
-    (async-shell-command line tshell-out-buffer))))
+    (let* ((buffer (tshell--extract-buffer line))
+           (processed-line (if (equal buffer tshell-out-buffer)
+                               line
+                             (string-trim-left line "^.+?> "))))
+      (tshell-shell-kill buffer)
+      (async-shell-command processed-line buffer)))))
 
 ;; TODO: eval in tshell-buffer instead because we want to use buffer
 ;; local variables from the shell buffer.
@@ -152,11 +156,13 @@ Currently available commands are:
   (with-current-buffer tshell-out-buffer
     (insert str)))
 
-(defun tshell-shell-kill ()
+(defun tshell-shell-kill (&optional buffer)
   "Kill out buffer process if it's running."
-  (when (process-live-p (get-buffer-process tshell-out-buffer))
+  (when (process-live-p (get-buffer-process (or buffer tshell-out-buffer)))
       (when (yes-or-no-p "A command is running. Kill it?")
-        (kill-process (get-buffer-process tshell-out-buffer)))))
+        (kill-process (get-buffer-process (or buffer tshell-out-buffer)))
+        ;; wait a bit for process to die
+        (sit-for 0.1))))
 
 (defun tshell-help ()
   "Show tshell help."
@@ -203,6 +209,14 @@ Currently available commands are:
   (insert tshell-shell-prompt (substitute-command-keys "# Use `\\[tshell-eval-input]' to run any line\n"))
   (insert tshell-shell-prompt "xdg-open https://github.com/TatriX/tshell/discussions\n")
   (insert tshell-internal-prompt "help\n"))
+
+(defun tshell--extract-buffer (line)
+  "Extract buffer name from the command LINE.
+Recognized syntax looks like this: `$ <*buffer-name*>'
+Defaults to the value `tshell-out-buffer'"
+  (if (string-match "^<\\(.+?\\)> " line)
+      (match-string 1  line)
+    tshell-out-buffer))
 
 ;;; Transient interface
 
