@@ -28,12 +28,27 @@
 ;;; Code:
 
 (require 'transient)
+
+;;; Customs
+(defgroup tshell nil
+  "Customs for `tshell'"
+  :group 'applications)
+
+(defcustom tshell-shell-prompt "$"
+  "Shell prompt."
+  :type 'string :group 'tshell)
+
+(defcustom tshell-elisp-prompt ">"
+  "Emacs Lisp prompt.")
+
+(defcustom tshell-internal-prompt ":"
+  "Internal prompt.")
+
+;;; Vars
+
 (defvar tshell-buffer "*tshell*")
 (defvar tshell-out-buffer "*tshell-out*")
 
-(defvar tshell-shell-prompt "$ ")
-(defvar tshell-elisp-prompt "> ")
-(defvar tshell-internal-prompt ": ")
 (defvar tshell-current-prompt tshell-shell-prompt)
 
 (defvar * nil "Most recent value evaluated in Tshell.")
@@ -89,7 +104,11 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
       (unless (and (boundp 'tshell-mode) tshell-mode)
         (tshell-mode)
         (tshell--insert-welcome-note)
-        (insert tshell-current-prompt)))))
+        (tshell--insert-current-prompt)))))
+
+(defun tshell--insert-current-prompt ()
+  "Insert current prompt and a space."
+  (insert tshell-current-prompt " "))
 
 
 ;;; Public stuff
@@ -102,7 +121,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
       (tshell-eval-command)
     (tshell-eval-command)
     (insert "\n")
-    (insert tshell-current-prompt)))
+    (tshell--insert-current-prompt)))
 
 ;; TODO: Include lines without a prompt to the current command.
 (defun tshell-eval-command ()
@@ -232,11 +251,11 @@ Currently available commands are:
 
 (defun tshell--insert-welcome-note ()
   "Print welcome note."
-  (insert tshell-shell-prompt "# Welcome to *tshell*\n")
-  (insert tshell-shell-prompt "# Have feature requests, bugreports or general feedback?\n")
-  (insert tshell-shell-prompt (substitute-command-keys "# Use `\\[tshell-eval-input]' to run any line\n"))
-  (insert tshell-shell-prompt "xdg-open https://github.com/TatriX/tshell/discussions\n")
-  (insert tshell-internal-prompt "help\n"))
+  (insert tshell-shell-prompt " # Welcome to *tshell*\n")
+  (insert tshell-shell-prompt " # Have feature requests, bugreports or general feedback?\n")
+  (insert tshell-shell-prompt (substitute-command-keys " # Use `\\[tshell-eval-input]' to run any line\n"))
+  (insert tshell-shell-prompt " xdg-open https://github.com/TatriX/tshell/discussions\n")
+  (insert tshell-internal-prompt " help\n"))
 
 (defun tshell--extract-buffer (line)
   "Extract buffer name from the command LINE.
@@ -317,3 +336,5 @@ Defaults to the value `tshell-out-buffer'"
   (insert-buffer tshell-out-buffer))
 
 (provide 'tshell)
+
+;;; tshell.el ends here
