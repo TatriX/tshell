@@ -117,3 +117,11 @@ $ locate tshell | grep 'el$'
 $ e # Type `C-c C-y`
 $ e /home/tatrix/.emacs.d/tshell/tshell.el # `e` is a special command which opens file in the emacs buffer
 ```
+
+## Customization
+
+You can customize how your prompt looks:
+```elisp
+(setq tshell-shell-prompt "zsh>")
+(setq tshell-elisp-prompt "elisp>")
+```
