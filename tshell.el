@@ -49,7 +49,7 @@
 (defvar tshell-buffer "*tshell*")
 (defvar tshell-out-buffer "*tshell-out*")
 
-(defvar tshell-current-prompt tshell-shell-prompt)
+(defvar-local tshell--current-prompt tshell-shell-prompt)
 
 (defvar * nil "Most recent value evaluated in Tshell.")
 
@@ -86,7 +86,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
                                            (propertize
                                             (directory-file-name (abbreviate-file-name default-directory))
                                             'face 'font-lock-variable-name-face)
-                                           tshell-current-prompt)))
+                                           tshell--current-prompt)))
   (when (fboundp 'fish-completion--list-completions)
     (add-hook 'completion-at-point-functions #'tshell-completion-at-point nil t)))
 
@@ -108,7 +108,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 
 (defun tshell--insert-current-prompt ()
   "Insert current prompt and a space."
-  (insert tshell-current-prompt " "))
+  (insert tshell--current-prompt " "))
 
 
 ;;; Public stuff
@@ -135,11 +135,11 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
      ;; $ shell eval
      ((string-prefix-p tshell-shell-prompt line)
       (tshell-shell-eval (string-remove-prefix tshell-shell-prompt line))
-      (setq tshell-current-prompt tshell-shell-prompt))
+      (tshell--set-current-prompt tshell-shell-prompt))
      ;; > elisp eval
      ((string-prefix-p tshell-elisp-prompt line)
       (tshell-elisp-eval (string-remove-prefix tshell-elisp-prompt line))
-      (setq tshell-current-prompt tshell-elisp-prompt)
+      (tshell--set-current-prompt tshell-elisp-prompt)
       (display-buffer tshell-out-buffer 'other-window))
      ((= (length line) 1)
       ;; Do nothing if there is just a prompt or any other single character
@@ -182,7 +182,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   "Evaluate LINE in the elisp mode."
   (with-current-buffer tshell-out-buffer
     ;; Save last shell output to "*" in case it's used in `line'.
-    (when (equal tshell-current-prompt tshell-shell-prompt)
+    (when (equal tshell--current-prompt tshell-shell-prompt)
       (setq * (buffer-substring-no-properties (point-min) (point-max))))
     (erase-buffer)
     (let ((result (eval (car (read-from-string line)))))
@@ -228,9 +228,9 @@ Currently available commands are:
     (undo 1)
     ;; Reset "*"
     (cond
-     ((string-equal tshell-current-prompt tshell-shell-prompt)
+     ((string-equal tshell--current-prompt tshell-shell-prompt)
       (setq * (buffer-substring-no-properties (point-min) (point-max))))
-     ((string-equal tshell-current-prompt tshell-elisp-prompt)
+     ((string-equal tshell--current-prompt tshell-elisp-prompt)
       (setq * (car (read-from-string (buffer-substring-no-properties (point-min) (point-max)))))))))
 
 
@@ -264,6 +264,11 @@ Defaults to the value `tshell-out-buffer'"
   (if (string-match "^<\\(.+?\\)> " line)
       (match-string 1  line)
     tshell-out-buffer))
+
+(defun tshell--set-current-prompt (prompt)
+  "Set current prompt to PROMPT"
+  (setq-local tshell--current-prompt prompt))
+
 
 ;;; Transient interface
 
