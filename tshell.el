@@ -173,7 +173,7 @@ Currently available commands are:
         (insert-file-contents readme)
         (set-window-point (get-buffer-window (current-buffer) 'visible) (point-min))
         (when (fboundp #'markdown-mode)
-          (markdown-mode)))))))
+          (markdown-mode))))))
 
 (defun tshell-undo ()
   "Undo changes in out buffer."

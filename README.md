@@ -16,13 +16,18 @@ See https://imgur.com/a/dsdKG2D
 
 ## Installation
 ```sh
-git clone https://github.com/magit/transient ~/.emacs.d/
+git clone https://github.com/magit/transient ~/.emacs.d/tshell
 ```
 
 ```elisp
 (use-package tshell
   :after transient
   :load-path "~/.emacs.d/tshell")
+```
+or
+```elisp
+(add-to-list 'load-path ~/.emacs.d/tshell)
+(require 'tshell)
 ```
 
 ### Completion
