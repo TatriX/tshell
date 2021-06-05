@@ -134,7 +134,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
       (tshell-internal-eval (string-remove-prefix tshell-internal-prompt line)))
      ;; $ shell eval
      ((string-prefix-p tshell-shell-prompt line)
-      (tshell-shell-eval (string-remove-prefix tshell-shell-prompt line))
+      (tshell-shell-eval (string-trim-left (string-remove-prefix tshell-shell-prompt line)))
       (tshell--set-current-prompt tshell-shell-prompt))
      ;; > elisp eval
      ((string-prefix-p tshell-elisp-prompt line)
