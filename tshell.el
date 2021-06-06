@@ -82,6 +82,7 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
   (setq-local tshell-mode t)
   (setq-local font-lock-defaults '(tshell-font-lock-keywords))
   (setq-local * nil)
+  (setq-local inhibit-read-only t)
   (setq header-line-format '(:eval (format "%s %s"
                                            (propertize
                                             (directory-file-name (abbreviate-file-name default-directory))
