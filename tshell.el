@@ -177,17 +177,16 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
       (tshell-shell-kill buffer)
       (async-shell-command processed-line buffer)))))
 
-;; TODO: eval in tshell-buffer instead because we want to use buffer
-;; local variables from the shell buffer.
 (defun tshell-elisp-eval (line)
   "Evaluate LINE in the elisp mode."
-  (with-current-buffer tshell-out-buffer
-    ;; Save last shell output to "*" in case it's used in `line'.
-    (when (equal tshell--current-prompt tshell-shell-prompt)
-      (setq * (buffer-substring-no-properties (point-min) (point-max))))
-    (erase-buffer)
-    (let ((result (eval (car (read-from-string line)))))
-      (setq * result)
+  ;; Save last shell output to "*" in case it's used in `line'.
+  (when (equal tshell--current-prompt tshell-shell-prompt)
+    (setq * (with-current-buffer tshell-out-buffer
+              (buffer-substring-no-properties (point-min) (point-max)))))
+  (let ((result (eval (car (read-from-string line)))))
+    (setq * result)
+    (with-current-buffer tshell-out-buffer
+      (erase-buffer)
       (insert (pp-to-string result)))))
 
 (defun tshell-internal-eval (line)
