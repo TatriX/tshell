@@ -257,11 +257,14 @@ Currently available commands are:
 
 (defun tshell--insert-welcome-note ()
   "Print welcome note."
-  (insert tshell-shell-prompt "# Welcome to *tshell*\n")
-  (insert tshell-shell-prompt "# Have feature requests, bugreports or general feedback?\n")
-  (insert tshell-shell-prompt (substitute-command-keys "# Use `\\[tshell-eval-input]' to run any line\n"))
-  (insert tshell-shell-prompt "xdg-open https://github.com/TatriX/tshell/discussions\n")
-  (insert tshell-internal-prompt "help\n"))
+  (let ((help-url "https://github.com/TatriX/tshell/discussions"))
+    (insert tshell-shell-prompt "# Welcome to *tshell*\n")
+    (insert tshell-shell-prompt (substitute-command-keys "# Use `\\[tshell-eval-input]' to run any line\n"))
+    (insert tshell-internal-prompt "help\n")
+    (insert tshell-shell-prompt "# Have feature requests, bugreports or general feedback?\n")
+    (insert tshell-shell-prompt (format "xdg-open %s\n" help-url))
+    (insert tshell-elisp-prompt (format "(browse-url \"%s\")\n" help-url))
+    (insert tshell-shell-prompt "ls\n")))
 
 (defun tshell--extract-buffer (line)
   "Extract buffer name from the command LINE.
