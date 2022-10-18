@@ -6,7 +6,7 @@ It is built around several basic ideas:
 
 - `RET` runs current line, so you can easily iterate on your one-liners
 - line prompt determines interpreter: `$` for shell, `>` for elisp
-- output by default goes to a single `*tshell-out*` buffer
+- output by default goes into a single `*tshell-out*` buffer
 - to get a named shell with history, write tshell buffer to a file, like `~/.tshell_history`
 - contents of the `*tshell-out*` buffer can be easily used as input for commands
 - create shortcuts via [transient](https://github.com/magit/transient)
@@ -16,7 +16,7 @@ See https://imgur.com/a/dsdKG2D
 
 ## Installation
 ```sh
-git clone https://github.com/magit/transient ~/.emacs.d/tshell
+git clone https://github.com/TatriX/tshell ~/.emacs.d/tshell
 ```
 
 ```elisp
